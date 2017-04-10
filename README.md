@@ -13,7 +13,7 @@ A `Board` is a `List` of `List`s of `p1`, `p2` or `empty` atoms. Pawns owned by 
 - `gameEnded(winner: P)` is sent to all the players when the game has ended. The value `winner: P` is `p1` when player 1 has won the game, and `p2` when player 2 is victorious.
 
 ### Messages sent by the players
-- `submitMove(from:(row col) to:(row col))` is sent to submit a move. The `from:(row col)` value is a tuple with the coordinates of a pawn owned by the current player. The `to:(row col)` value  is a tuple with the coordinates to which this pawn has to be moved. (`row` and `col` are normal integers)
+- `submitMove(f(row col) t(row col))` is sent to submit a move. The `f(row col)` value is a tuple with the coordinates of a pawn owned by the current player. The `t(row col)` value  is a tuple with the coordinates to which this pawn has to be moved. (`row` and `col` are normal integers)
 
 ### Message order
 - The first player (`p1`) can always make the first move.
