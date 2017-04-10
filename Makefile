@@ -15,7 +15,7 @@ build: $(OBJECTS)
 
 .PHONY: run
 run: $(OBJECTS)
-	$(EXEC) $(OBJECTS)
+	$(EXEC) Main.ozf
 
 .PHONY: clean
 clean:
