@@ -1,3 +1,10 @@
+## Oz
+*.ozf
+
+
+
+
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
