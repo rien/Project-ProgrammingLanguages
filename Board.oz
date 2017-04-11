@@ -10,7 +10,7 @@ import
 export
    show:Show
    init:Init
-   replaceWith:ReplaceWith
+   set:Set
    get:Get
 
    /* A board is represented by a tuple board(row(...) ... row()) of rows.
@@ -76,7 +76,7 @@ define
     * When the coordinates are not within the Board's boundaries,
     * the same board is returned.
     */
-   fun {ReplaceWith NewElem RowNum ColNum Board}
+   fun {Set NewElem RowNum ColNum Board}
       local
          % Replace the element in the requested column with the new element
          fun {ReplaceCol OldElem Idx}

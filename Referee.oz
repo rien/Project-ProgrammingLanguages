@@ -45,7 +45,7 @@ define
          fun {DoMove}
             submitMove(f(Fr Fc) t(Tr Tc)) = Move
          in
-            {Board.replaceWith Player Fr Fc {Board.replaceWith empty Tr Tc OldBoard}}
+            {Board.set Player Fr Fc {Board.set empty Tr Tc OldBoard}}
          end
          NextBoard
          NextPlayer
