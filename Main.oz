@@ -1,3 +1,4 @@
+
 functor
 import
    Board
@@ -10,7 +11,10 @@ define
    S2
    PR1
    PR2
+   B
 in
+   B = {Board.init 5}
+   {ShowInfo "Board at 4 4:"#{Board.get 4 4 B}}
    {ShowInfo "Test"}
    {NewPort S1 P1}
    {NewPort S2 P2}

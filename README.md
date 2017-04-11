@@ -6,7 +6,9 @@ Each player has to create a `Port` to which the `Referee` can send its messages 
 Each player receives a `Port` to which it can send the answers to the requests.
 The referee and the players communicate with each other by sending records trough these ports.
 
-A `Board` is a `List` of `List`s of `p1`, `p2` or `empty` atoms. Pawns owned by player 1 and 2 are represented  by `p1` and `p2`. Fields without pawns are `empty`.
+A `Board` is a tuple with the label `board` of tuples with labels `row` of `p1`, `p2` or `empty` atoms. Pawns owned by player 1 and 2 are represented  by `p1` and `p2`. Fields without pawns are `empty`. The reason I chose for tuples instead of lists is the massive performance increase.
+
+For some reason tuples are **1-INDEXED**. I refuse to accept this so all moves submitted must be 0-indexed. You can use the `Board.get` and `Board.replaceWith` methods which use 0-indexing to select fields on the board.
 
 ### Messages sent by the referee
 - `moveRequest(board: B)` is sent to the player who can move next. The `board: B` value represents the current game state.

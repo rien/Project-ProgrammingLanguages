@@ -1,11 +1,21 @@
 functor
 import
-   System(showInfo:ShowInfo)
-   Helper(join:Join mapIdx:MapIdx makeListWith:MakeListWith)
+   System( showInfo:ShowInfo)
+   Helper( joinTuple:JoinTuple
+           makeListWith:MakeListWith
+           makeTupleWith:MakeTupleWith
+           mapInd0:MapInd0
+           forallInd0:ForAllInd0
+         )
 export
    show:Show
    init:Init
    replaceWith:ReplaceWith
+   get:Get
+
+   /* A board is represented by a tuple board(row(...) ... row()) of rows.
+    *
+    */
 define
 
    /* Init
@@ -15,13 +25,15 @@ define
     * and 'empty' in between
     */
    fun {Init Size}
-      local
-         EmptyRows = for _ in 0..Size-2 collect:C do
-            {C {MakeListWith Size empty}}
-         end
-      in
-         {MakeListWith Size p1}|{Append EmptyRows [{MakeListWith Size p2}]}
+      B
+   in
+      B = {MakeTuple board Size}
+      B.1 = {MakeTupleWith row Size p1}
+      for Row in 2..Size-1 do
+         B.Row = {MakeTupleWith row Size empty}
       end
+      B.Size = {MakeTupleWith row Size p2}
+      B % return
    end
 
    /*
@@ -46,14 +58,14 @@ define
          % Each element separated by a space
          % Between to pipes to make the sides of the frame
          fun {RowToString Row}
-            "| "#{Join {Map Row ToChar} " "}#" |"
+            "| "#{JoinTuple {Record.map Row ToChar} " "}#" |"
          end
 
          % A nice upper and lower border for the frame
-         Border = "+"#{MakeListWith 2*{Length Board}-1 &- }#"+"
+         Border = "+"#{MakeListWith 2*{Width Board}+1 &- }#"+"
       in
       {ShowInfo Border}
-      {ShowInfo {Join {Map Board RowToString} "\n"}}
+      {ShowInfo {JoinTuple {Record.map Board RowToString} "\n"}}
       {ShowInfo Border}
       end
    end
@@ -77,12 +89,22 @@ define
          % Replace the requested row with a row where the new element is replaced
          fun {ReplaceRow Row Idx}
             if Idx == RowNum
-            then {MapIdx Row ReplaceCol}
+            then {MapInd0 Row ReplaceCol}
             else Row
             end
          end
       in
-         {MapIdx Board ReplaceRow}
+         {MapInd0 Board ReplaceRow}
       end
    end
+
+   /* Get
+    *
+    * Get the item which is on the given position on the board.
+    * Helper method to deal with the 1-indexing of board.
+    */
+   fun {Get Row Col Board}
+     Board.(Row+1).(Col+1)
+   end
+
 end

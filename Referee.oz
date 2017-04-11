@@ -51,7 +51,7 @@ define
          NextPlayer
          NextAgain
       in
-         if {ValidMove Player Move OldBoard}
+         if true %TODO valid move?
          then
             % The move is valid, change board and player
             NextBoard = {DoMove}
@@ -110,10 +110,10 @@ define
       end
    end
 
-   /* Check whether the given Move is valid for the Player on the Board
+   /* Return a list of possible moves
     */
-   fun {ValidMove Player Move Board}
-      true
+   fun {CalculateMoves Board}
+      nil
    end
 
    /* Check if the game is ended
