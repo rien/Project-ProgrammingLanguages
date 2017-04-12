@@ -11,6 +11,16 @@ export
    directionFor:DirectionFor
 define
 
+   /* Returns true when L is an empty list.
+    * False otherwise
+    */
+   fun {IsEmpty L}
+      case L
+      of nil then true
+      else false
+      end
+   end
+
    fun {AndThen A B}
       if A
       then true

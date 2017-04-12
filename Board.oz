@@ -1,3 +1,8 @@
+%
+% A board to play the game on.
+%
+% A board is represented by a tuple board(row(...) ... row()) of row tuples.
+%
 functor
 import
    Browser
@@ -14,10 +19,8 @@ export
    init:Init
    set:Set
    validMovesFor:ValidMovesFor
+   analyse:Analyse
 
-   /* A board is represented by a tuple board(row(...) ... row()) of rows.
-    *
-    */
 define
 
    /* Init
@@ -26,15 +29,15 @@ define
     * with p1 on the first row, p2 on the last
     * and 'empty' in between
     */
-   fun {Init Size}
+   fun {Init Rows Cols}
       B
    in
-      B = {MakeTuple board Size}
-      B.1 = {MakeTupleWith row Size p1}
-      for Row in 2..Size-1 do
-         B.Row = {MakeTupleWith row Size empty}
+      B = {MakeTuple board Rows}
+      B.1 = {MakeTupleWith row Cols p1}
+      for Row in 2..Rows-1 do
+         B.Row = {MakeTupleWith row Cols empty}
       end
-      B.Size = {MakeTupleWith row Size p2}
+      B.Rows = {MakeTupleWith row Cols p2}
       B % return
    end
 
@@ -64,7 +67,7 @@ define
          end
 
          % A nice upper and lower border for the frame
-         Border = "+"#{MakeListWith 2*{Width Board}+1 &- }#"+"
+         Border = "+"#{MakeListWith 2*{Width Board.1}+1 &- }#"+"
       in
       {ShowInfo Border}
       {ShowInfo {JoinTuple {Record.map Board RowToString} "\n"}}
@@ -122,7 +125,8 @@ define
          CL = C-1   % One column left
          CR = C+1   % One column right
          Other = {OtherPlayer Player}
-         W = {Width Board}
+         Rows = {Width Board}
+         Cols = {Width Board.1}
 
          fun {Move To} % Create the tuple mv(f(R C) t(R C))
             mv(f(R C) To)
@@ -146,7 +150,7 @@ define
          end
 
          % Take left oppononet diagonally
-         if CR < (W+1)
+         if CR < (Cols+1)
          then SlayRight = Board.RD.CR == Other
          else SlayRight = false
          end
@@ -175,6 +179,35 @@ define
       end
    in
       {Record.foldLInd Board CheckRow nil}
+   end
+
+   /* Analyse
+    *
+    * Returns the current situation of a board.
+    * The result is the following record:
+    * situation( finished: f(p1:Bool p2:Bool)
+    *            moves: m( p1:List p2:List)
+    *            )
+    * -> p1Finish and p2Finish are true when p1 or p2 reached the other side
+    * -> moves contain a record with the valid moves for each player
+    *    if it would be their turn right now
+    */
+   fun {Analyse B}
+      Last = {Width B}
+      fun {IsP1 P}
+         P == p1
+      end
+      fun {IsP2 P}
+         P == p2
+      end
+      P1f = {Record.some B.Last IsP1}
+      P2f = {Record.some B.1 IsP2}
+      P1m = {ValidMovesFor p1 B}
+      P2m = {ValidMovesFor p2 B}
+   in
+      situation( finished: f(p1: P1f p2: P2f)
+                 moves: m(p1:P1m p2:P2m)
+                 )
    end
 
 end

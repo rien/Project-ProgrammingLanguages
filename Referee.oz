@@ -1,18 +1,20 @@
 functor
 import
    Application
+   Browser
    Board
+   Helper(isEmpty:IsEmpty)
    System(showInfo:ShowInfo)
 export
    refereeFor:RefereeFor
 define
    /* RefereeFor
     *
-    * Play a game on a board of the given Size,
+    * Play a game on a board of the given size (Rows x Cols),
     * between two player which can be communicated with trough the ports P1 and P2.
     * The function returns a tuple with two Ports: one for each player.
     */
-   fun {RefereeFor P1 P2 Size}
+   fun {RefereeFor P1 P2 Rows Cols}
 
       % Which port for whic player?
       fun {PortFor P}
@@ -23,24 +25,27 @@ define
       end
 
       % Using the current State and an incoming message, calculate the next state
-      fun {ConsumeMsg OldState Msg}
-         local
-            state(board:B player:CP again:A) = OldState
-            msg(player:RP move:M) = Msg
-         in
-            % First, check if the current player
-            if RP == CP
-            then {JudgeMove CP M B A}
-            else
-               {ShowInfo "Player "#RP#" did not wait his/her turn!"}
-               {EndGame CP}
-               nil
-            end
+      fun {ConsumeMsg State Msg}
+         state(board:_ player:CP again:_ moves:_) = State
+         msg(player:RP move:M) = Msg
+      in
+         % First, check if the current player
+         if RP == CP
+         then {JudgeMove State M}
+         else
+            {ShowInfo "Player "#RP#" did not wait his/her turn!"}
+            {EndGame CP}
+            nil
          end
       end
 
       % Decide if the current move is valid and return a new state accordingly
-      fun {JudgeMove Player Move OldBoard Again}
+      fun {JudgeMove State Move}
+         state( board:OldBoard
+                player:Player
+                again:Again
+                moves: ValidMoves
+                ) = State
          % Helper method: Execute the move
          fun {DoMove}
             mv(f(Fr Fc) t(Tr Tc)) = Move
@@ -50,17 +55,19 @@ define
          NextBoard
          NextPlayer
          NextAgain
-         ValidMoves = {Board.validMovesFor Player}
+         NewSituation
+         NoMoreMoves
       in
-         if {Member Move ValidMoves}
+         if {Member Move ValidMoves.Player}
          then
             % The move is valid, change board and player
             NextBoard = {DoMove}
             NextPlayer = {Other Player}
             NextAgain = false
+            NewSituation = {Board.analyse NextBoard}
+            NoMoreMoves = {IsEmpty NewSituation.moves.NextPlayer}
 
-            % check if the make is ended
-            if {GameIsEnded NextBoard}
+            if (NewSituation.finished.Player orelse NoMoreMoves)
             then {EndGame Player}
             end
          else
@@ -77,7 +84,7 @@ define
          % Send a request to the (new) player
          {Send {PortFor NextPlayer} moveRequest(board: NextBoard)}
          {Board.show NextBoard}
-         state(board:NextBoard player:NextPlayer again:NextAgain)
+         state(board:NextBoard player:NextPlayer again:NextAgain moves:ValidMoves)
       end
 
       % End the game and declare Player as the winner
@@ -91,13 +98,22 @@ define
          end
       end
 
+      % The initial board
+      InitBoard = {Board.init Rows Cols}
+
       % The initial state
-      InitState = state(player:p1 board:{Board.init Size} again:false)
+      situation(finished:_ moves:Moves) = {Board.analyse InitBoard}
+      InitState = state( player:p1
+                         board:InitBoard
+                         again:false
+                         moves:Moves
+                         )
 
       % Start the referee thread with the initial state
       RP = {RefereePort InitState ConsumeMsg}
    in
-      {ShowInfo "Game started!"}
+
+
       %  Send a request to player 1. The game is on.
       {Send P1 moveRequest(board: InitState.board)}
       ports({PlayerPort p1 RP} {PlayerPort p2 RP})
@@ -117,29 +133,6 @@ define
       nil
    end
 
-   /* Check if the game is ended
-    * There are two ways this can be achieved:
-    * - One of the pawns reached the other side
-    * - There are no moves possible
-    */
-   fun {GameIsEnded B}
-      P1finished
-      P2finished
-      NoMoreMoves
-      W = {Width B}
-      fun {IsP1 P}
-         P == p1
-      end
-      fun {IsP2 P}
-         P == p2
-      end
-   in
-      %P1finished = {Record.some B.W IsP1}
-      %P2finished = {Record.some B.1 IsP2}
-      %NoMoreMoves = {Length {Board.validMovesFor p1 B}} == 0 and {Length {Board.validMovesFor p2 B}} == 0
-      %P1finished or P2finished or NoMoreMoves
-      true
-   end
 
    /* Port which receives messages from both players and processes them while
     * keeping an internal (using FoldL).
