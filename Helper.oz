@@ -9,6 +9,7 @@ export
    makeTupleWith:MakeTupleWith
    otherPlayer:OtherPlayer
    directionFor:DirectionFor
+   isEmpty:IsEmpty
 define
 
    /* Returns true when L is an empty list.

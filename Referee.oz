@@ -46,13 +46,17 @@ define
                 again:Again
                 moves: ValidMoves
                 ) = State
+
          % Helper method: Execute the move
          fun {DoMove}
             mv(f(Fr Fc) t(Tr Tc)) = Move
          in
-            {Board.set Player Fr Fc {Board.set empty Tr Tc OldBoard}}
+            {ShowInfo "From ("#Fr#" "#Fc#") to ("#Tr#" "#Tc#")"}
+            {Board.set Player Tr Tc {Board.set empty Fr Fc OldBoard}}
          end
+
          NextBoard
+         NextMoves
          NextPlayer
          NextAgain
          NewSituation
@@ -65,7 +69,8 @@ define
             NextPlayer = {Other Player}
             NextAgain = false
             NewSituation = {Board.analyse NextBoard}
-            NoMoreMoves = {IsEmpty NewSituation.moves.NextPlayer}
+            NextMoves = NewSituation.moves
+            NoMoreMoves = {IsEmpty NextMoves.NextPlayer}
 
             if (NewSituation.finished.Player orelse NoMoreMoves)
             then {EndGame Player}
@@ -78,13 +83,14 @@ define
                % Second chance: same board and player
                NextBoard = OldBoard
                NextPlayer = Player
+               NextMoves = ValidMoves
                NextAgain = true
             end
          end
          % Send a request to the (new) player
-         {Send {PortFor NextPlayer} moveRequest(board: NextBoard)}
+         {Send {PortFor NextPlayer} request(board: NextBoard moves:NextMoves)}
          {Board.show NextBoard}
-         state(board:NextBoard player:NextPlayer again:NextAgain moves:ValidMoves)
+         state(board:NextBoard player:NextPlayer again:NextAgain moves:NextMoves)
       end
 
       % End the game and declare Player as the winner
@@ -115,7 +121,7 @@ define
 
 
       %  Send a request to player 1. The game is on.
-      {Send P1 moveRequest(board: InitState.board)}
+      {Send P1 request(board: InitState.board moves:Moves)}
       ports({PlayerPort p1 RP} {PlayerPort p2 RP})
    end
 

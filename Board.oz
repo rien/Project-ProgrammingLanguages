@@ -127,41 +127,41 @@ define
          Other = {OtherPlayer Player}
          Rows = {Width Board}
          Cols = {Width Board.1}
+         EndRow
 
          fun {Move To} % Create the tuple mv(f(R C) t(R C))
             mv(f(R C) To)
          end
       in
-         % One step forward
-         if Board.(RD).C == empty
-         then L1 = t(RD C)|nil
-         else L1 = nil
+         case Player
+         of p1 then EndRow = Rows+1
+         [] p2 then EndRow = 0
          end
 
-         % Take right opponent diagonally
-         if CL > 0 
-         then SlayLeft = Board.RD.CL == Other
-         else SlayLeft = false
-         end
+         if RD == EndRow
+         then nil % No moves possible
+         else
+            % One step forward
+            if Board.(RD).C == empty
+            then L1 = t(RD C)|nil
+            else L1 = nil
+            end
 
-         if SlayLeft
-         then L2 = t(RD CL)|L1
-         else L2 = L1
-         end
+            % Take right opponent diagonally
+            if CL > 0 andthen Board.RD.CL == Other
+            then L2 = t(RD CL)|L1
+            else L2 = L1
+            end
 
-         % Take left oppononet diagonally
-         if CR < (Cols+1)
-         then SlayRight = Board.RD.CR == Other
-         else SlayRight = false
-         end
+            % Take left oppononet diagonally
+            if CR < (Cols+1) andthen Board.RD.CR == Other
+            then L3 = t(RD CR)|L2
+            else L3 = L2
+            end
 
-         if SlayRight
-         then L3 = t(RD CR)|L2
-         else L3 = L2
+            % Create the moves
+            {Map L3 Move}
          end
-
-         % Create the moves
-         {Map L3 Move}
       end
 
       % Look in each row

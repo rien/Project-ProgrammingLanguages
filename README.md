@@ -11,11 +11,11 @@ A `Board` is a tuple with the label `board` of tuples with labels `row` of `p1`,
 For some reason tuples are **1-INDEXED**. I refuse to accept this so all moves submitted must be 0-indexed. You can use the `Board.get` and `Board.replaceWith` methods which use 0-indexing to select fields on the board.
 
 ### Messages sent by the referee
-- `moveRequest(board: B)` is sent to the player who can move next. The `board: B` value represents the current game state.
+- `request(board: B moves:m(p1:List p2:List))` is sent to the player who can move next. The `board: B` value represents the current game state. The `moves` represent the possible moves for each player. A simple implementation for a player could be one that sends the first move from his own list back to the `Referee`.
 - `gameEnded(winner: P)` is sent to all the players when the game has ended. The value `winner: P` is `p1` when player 1 has won the game, and `p2` when player 2 is victorious.
 
 ### Messages sent by the players
-- `submitMove(f(row col) t(row col))` is sent to submit a move. The `f(row col)` value is a tuple with the coordinates of a pawn owned by the current player. The `t(row col)` value  is a tuple with the coordinates to which this pawn has to be moved. (`row` and `col` are normal integers)
+- `move(f(row col) t(row col))` is sent to submit a move. The `f(row col)` value is a tuple with the coordinates of a pawn owned by the current player. The `t(row col)` value  is a tuple with the coordinates to which this pawn has to be moved. (`row` and `col` are normal integers)
 
 ### Message order
 - The first player (`p1`) can always make the first move.
