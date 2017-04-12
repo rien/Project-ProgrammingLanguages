@@ -1,8 +1,9 @@
-
 functor
 import
    Board
    Referee
+   Helper
+   Browser
    System(showInfo:ShowInfo)
 define
    P1
@@ -12,15 +13,26 @@ define
    PR1
    PR2
    B
+   B2
+   M
+   fun {IsP2 P}
+      P == p2
+   end
 in
    B = {Board.init 5}
-   {ShowInfo "Board at 4 4:"#{Board.get 4 4 B}}
-   {ShowInfo "Test"}
+   {ShowInfo "Board at 5 5:"#B.5.5}
+   M = {Board.validMovesFor p1 B}
+   {Board.show B}
+   B2 = {Board.set p2 3 3 B}
+   {Board.show B2}
+   {Browser.browse {Record.some B2.3 IsP2}}
+   /*
    {NewPort S1 P1}
    {NewPort S2 P2}
    ports(PR1 PR2) = {Referee.refereeFor P1 P2 5}
-   {Send PR1 submitMove(f(1 1) t(1 1))}
-   {Send PR1 submitMove(f(1 1) t(1 1))}
-   {Send PR2 submitMove(f(1 1) t(1 1))}
+   {Send PR1 mv(f(2 2) t(2 2))}
+   {Send PR1 mv(f(2 2) t(2 2))}
+   {Send PR2 mv(f(2 2) t(2 2))}
    {ShowInfo "END"}
+   */
 end

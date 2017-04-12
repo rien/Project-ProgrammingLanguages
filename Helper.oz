@@ -2,14 +2,35 @@ functor
 import
    System(showInfo:ShowInfo)
 export
+   andThen:AndThen
    join:Join
    joinTuple:JoinTuple
    makeListWith:MakeListWith
    makeTupleWith:MakeTupleWith
-   mapIdx:MapIdx
-   mapInd0:MapInd0
-   forAllInd0:ForAllInd0
+   otherPlayer:OtherPlayer
+   directionFor:DirectionFor
 define
+
+   fun {AndThen A B}
+      if A
+      then true
+      else B
+      end
+   end
+
+   fun {OtherPlayer P}
+      case P
+      of p1 then p2
+      [] p2 then p1
+      end
+   end
+
+   fun {DirectionFor Player}
+      case Player
+      of p1 then 1
+      [] p2 then ~1
+      end
+   end
 
    /* MakeListWith
     *
@@ -36,19 +57,6 @@ define
          T.I = Elem
       end
       T % Return
-   end
-
-   /* MapInd0
-    *
-    * Like MapInd for tuples, but 0 indexed (and arguments are switched)
-    * The function should take an element from the tuple first and an index second.
-    */
-   fun {MapInd0 Tup Func}
-      fun {FuncSub I E}
-         {Func E I-1}
-      end
-   in
-      {Record.mapInd Tup FuncSub}
    end
 
    /* Join
@@ -81,49 +89,5 @@ define
       end
    in
       {Iteration 1 ""}
-   end
-
-   /* MapIdx
-    *
-    * Works like Map but also gives the index as second argument
-    * of the current item to the consumer.
-    */
-   fun {MapIdx List Func}
-      fun {Iteration Idx List Func}
-         case List of nil then nil
-         [] X|Xs then {Func X Idx}|{Iteration Idx+1 Xs Func}
-         end
-      end
-   in
-      {Iteration 0 List Func}
-   end
-
-   /* ForEach
-    *
-    * Loop over all the fields of a tuple while keeping track of the index (zero indexed!).
-    * Proc should be a procedure which accepts an element of the tuple and the index.
-    */
-   proc {ForAllInd0 Tup Proc}
-      proc {ProcSub E I}
-         {Proc E I-1}
-      end
-   in
-      {Record.forAllInd Tup ProcSub}
-   end
-
-   /* FoldLTup
-    *
-    * Like FoldL bu for Tuples
-    */
-   fun {FoldLTup Tup Func Acc}
-      Length = {Width Tup}
-      fun {Iteration I A}
-         if I > Length
-         then A
-         else {Iteration I+1 {Func Tup.I}}
-         end
-      end
-   in
-      {Iteration 1 Acc}
    end
 end

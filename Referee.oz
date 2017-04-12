@@ -43,15 +43,16 @@ define
       fun {JudgeMove Player Move OldBoard Again}
          % Helper method: Execute the move
          fun {DoMove}
-            submitMove(f(Fr Fc) t(Tr Tc)) = Move
+            mv(f(Fr Fc) t(Tr Tc)) = Move
          in
             {Board.set Player Fr Fc {Board.set empty Tr Tc OldBoard}}
          end
          NextBoard
          NextPlayer
          NextAgain
+         ValidMoves = {Board.validMovesFor Player}
       in
-         if true %TODO valid move?
+         if {Member Move ValidMoves}
          then
             % The move is valid, change board and player
             NextBoard = {DoMove}
@@ -60,7 +61,7 @@ define
 
             % check if the make is ended
             if {GameIsEnded NextBoard}
-            then {EndGame Player} 
+            then {EndGame Player}
             end
          else
             % The move is invalid, check if this is the player's second chance
@@ -121,8 +122,23 @@ define
     * - One of the pawns reached the other side
     * - There are no moves possible
     */
-   fun {GameIsEnded Board}
-      false
+   fun {GameIsEnded B}
+      P1finished
+      P2finished
+      NoMoreMoves
+      W = {Width B}
+      fun {IsP1 P}
+         P == p1
+      end
+      fun {IsP2 P}
+         P == p2
+      end
+   in
+      %P1finished = {Record.some B.W IsP1}
+      %P2finished = {Record.some B.1 IsP2}
+      %NoMoreMoves = {Length {Board.validMovesFor p1 B}} == 0 and {Length {Board.validMovesFor p2 B}} == 0
+      %P1finished or P2finished or NoMoreMoves
+      true
    end
 
    /* Port which receives messages from both players and processes them while
