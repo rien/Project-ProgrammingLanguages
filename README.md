@@ -8,13 +8,15 @@ The referee and the players communicate with each other by sending records troug
 
 A `Board` is a tuple with the label `board` of tuples with labels `row` of `p1`, `p2` or `empty` atoms. Pawns owned by player 1 and 2 are represented  by `p1` and `p2`. Fields without pawns are `empty`. The reason I chose for tuples instead of lists is the massive performance increase. Sadly, these tuples are 1-indexed.
 
+A move is represented by the tuple `move(f(row col) t(row col))`. Where `f(row col)` represents the current row and column of a pawn (**f**rom) and `t(row col)` represents the desired next coordinate of that pawn (**t**o). `row` and `col` are integers and are 1-indexed.
+
 
 ### Messages sent by the referee
 - `request(board: B moves:m(p1:List p2:List))` is sent to the player who can move next. The `board: B` value represents the current game state. The `moves` represent the possible moves for each player. A simple implementation for a player could be one that sends the first move from his own list back to the `Referee`.
 - `gameEnded(winner: P)` is sent to all the players when the game has ended. The value `winner: P` is `p1` when player 1 has won the game, and `p2` when player 2 is victorious.
 
 ### Messages sent by the players
-- `move(f(row col) t(row col))` is sent to submit a move. The `f(row col)` value is a tuple with the coordinates of a pawn owned by the current player. The `t(row col)` value  is a tuple with the coordinates to which this pawn has to be moved. (`row` and `col` are normal integers)
+- `move(f(row col) t(row col))` is sent to submit a move. See above for the meaning of each field in the tuple. The from-coordinate should have a pawn owned by the current player and the to-coordinate should be a valid move for that pawn. If one of these conditions is not satisfied, the referee will request another move (once).
 
 ### Message order
 - The first player (`p1`) can always make the first move.
