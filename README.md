@@ -19,5 +19,22 @@ For some reason tuples are **1-INDEXED**. I refuse to accept this so all moves s
 
 ### Message order
 - The first player (`p1`) can always make the first move.
-- When a player submits an illegal move, a new `moveRequest` is sent to the same player. If the players responds with another illegal move, the game is ended in favor of the opponent.
+- When a player submits an illegal move, a new `request` is sent to the same player. If the players responds with another illegal move, the game is ended in favor of the opponent.
 - When a player submits a move while it is not their turn, the game is ended in favor of the opponent.
+
+## Implementation
+
+### Player
+To create a player, use `Player.createPlayer PlayerType RefereePort`. Where `PlayerType` is `p1` or `p2` (player 1 or player 2). And `RefereePort` is the port to the referee for this player (see below). This function returns the port that should be given to the `Referee`.
+
+### Referee
+The function `Referee.refereeFor P1 P2 Rows Cols` returns the tuple `ports(PR1 PR2)`. The arguments `P1` and `P2` are the ports returned by `createPlayer` for player 1 and 2. These variables should instantiated to avoid a deadlock, because there will be sent a message to `P1` immediately. `Rows` and `Cols` are integers and represent the height and width of the playing field. The returned values `PR1` and `PR2` are ports which should be given to player 1 and player 2.
+
+### Example
+To create a game between two `Player`'s on a 5 by 5 field:
+```
+P1 = {Player.createPlayer p1 PR1}
+P2 = {Player.createPlayer p2 PR2}
+ports(PR1 PR2) = {Referee.refereeFor P1 P2 5 5}
+```
+This assumes that the necessary variables are available and unbound.
