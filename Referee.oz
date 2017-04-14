@@ -31,7 +31,6 @@ define
          in
             thread
                {ProcessMsg InitialState Port}
-               {ShowInfo "Referee thread ended."}
             end
             {NewPort Port}
          end

@@ -18,6 +18,7 @@ export
    set:Set
    validMovesFor:ValidMovesFor
    analyse:Analyse
+   toList:ToList
 
 define
 
@@ -206,4 +207,26 @@ define
                  )
    end
 
+   /*
+    * Converts a board (of tuples) to a list of lists.
+    */
+   fun {ToList B}
+      Rows = {Width B}
+      Cols = {Width B.1}
+      fun {IterateRow RowInd}
+         fun {IterateCol ColInd}
+            if ColInd < Cols+1
+            then B.RowInd.ColInd|{ IterateCol ColInd+1}
+            else nil
+            end
+         end
+      in
+         if RowInd < Rows+1
+         then {IterateCol 1}|{IterateRow RowInd+1}
+         else nil
+         end
+      end
+   in
+      {IterateRow 1}
+   end
 end

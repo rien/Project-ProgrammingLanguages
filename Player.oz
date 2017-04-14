@@ -39,8 +39,8 @@ define
             {ProcessRequests T}
          [] gameEnded(winner: P)|_ then
             if P == Player
-            then {ShowInfo Player#": Yay! :D"}
-            else {ShowInfo Player#": Minimimi... :("}
+            then {ShowInfo Player#": Yay! :)"}
+            else {ShowInfo Player#": I am defeated. :("}
             end
          end
       end
@@ -49,7 +49,6 @@ define
    in
       thread
          {ProcessRequests Port}
-         {ShowInfo "Player "#Player#" thread ended."}
       end
       {NewPort Port}
    end
