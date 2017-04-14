@@ -10,7 +10,7 @@ A `Board` is a tuple with the label `board` of tuples with labels `row` of `p1`,
 
 
 ### Messages sent by the referee
-- `request(board: B moves:m(p1:List p2:List))` is sent to the player who can move next. The `board: B` value represents the current game state. The `moves` represent the possible moves for each player. A simple implementation for a player could be one that sends the first move from his own list back to the `Referee`.
+- `request(board: B)` is sent to the player who can move next. The `board: B` value represents the current game state.  
 - `gameEnded(winner: P)` is sent to all the players when the game has ended. The value `winner: P` is `p1` when player 1 has won the game, and `p2` when player 2 is victorious.
 
 ### Messages sent by the players

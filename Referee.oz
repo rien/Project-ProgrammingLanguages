@@ -1,20 +1,19 @@
 functor
 import
-   Application
-   Browser
    Board
-   Helper(isEmpty:IsEmpty)
+   Helper(isEmpty:IsEmpty otherPlayer:OtherPlayer)
    System(showInfo:ShowInfo)
 export
-   refereeFor:RefereeFor
+   createReferee:CreateReferee
 define
+
    /* RefereeFor
     *
     * Play a game on a board of the given size (Rows x Cols),
     * between two player which can be communicated with trough the ports P1 and P2.
     * The function returns a tuple with two Ports: one for each player.
     */
-   fun {RefereeFor P1 P2 Rows Cols}
+   fun {CreateReferee P1 P2 Rows Cols}
 
       % Which port for whic player?
       fun {PortFor P}
@@ -24,18 +23,41 @@ define
          end
       end
 
+      /* Port which receives messages from both players and processes them while
+       * keeping an internal (using FoldL).
+       */
+      fun {RefereePort InitialState}
+         local Port
+         in
+            thread
+               {ProcessMsg InitialState Port}
+               {ShowInfo "Referee thread ended."}
+            end
+            {NewPort Port}
+         end
+      end
+
       % Using the current State and an incoming message, calculate the next state
-      fun {ConsumeMsg State Msg}
+      % If the game has ended, return nil.
+      proc {ProcessMsg State Messages}
+         Msg|NextMessages = Messages
          state(board:_ player:CP again:_ moves:_) = State
          msg(player:RP move:M) = Msg
+         NextState
       in
+         {ShowInfo "Received a message from "#RP#"."}
+
          % First, check if the current player
          if RP == CP
-         then {JudgeMove State M}
+         then NextState = {JudgeMove State M}
          else
             {ShowInfo "Player "#RP#" did not wait his/her turn!"}
-            {EndGame CP}
-            nil
+            NextState = {EndGame CP}
+         end
+
+         case NextState
+         of nil then skip % This does not recurse
+         else {ProcessMsg NextState NextMessages} % Recurse, next iteration
          end
       end
 
@@ -55,100 +77,92 @@ define
             {Board.set Player Tr Tc {Board.set empty Fr Fc OldBoard}}
          end
 
-         NextBoard
-         NextMoves
-         NextPlayer
-         NextAgain
-         NewSituation
-         NoMoreMoves
       in
          if {Member Move ValidMoves.Player}
          then
-            % The move is valid, change board and player
-            NextBoard = {DoMove}
-            NextPlayer = {Other Player}
-            NextAgain = false
-            NewSituation = {Board.analyse NextBoard}
-            NextMoves = NewSituation.moves
-            NoMoreMoves = {IsEmpty NextMoves.NextPlayer}
+            local
+               NextBoard
+               NextMoves
+               NextPlayer
+               NewSituation
+               NoMoreMoves
+            in
+               NextBoard = {DoMove}
+               NextPlayer = {OtherPlayer Player}
+               NewSituation = {Board.analyse NextBoard}
+               NextMoves = NewSituation.moves
+               NoMoreMoves = {IsEmpty NextMoves.NextPlayer}
 
-            if (NewSituation.finished.Player orelse NoMoreMoves)
-            then {EndGame Player}
+               % Show the current board
+               {Board.show NextBoard}
+
+               if NewSituation.finished.Player
+               then
+                  {ShowInfo "Game ended because "#Player#" reached the other side."}
+                  {EndGame Player} % Returns nil -> end game
+               else if NoMoreMoves
+                  then
+                     {ShowInfo "Game ended because there are no more moves possible."}
+                     {EndGame Player} % Returns nil -> end game
+                  else
+                     {RequestNext NextBoard NextPlayer NextMoves false} % Returns new state
+                  end
+               end
             end
+            % The move is valid, change board and player
          else
             % The move is invalid, check if this is the player's second chance
+            {ShowInfo "Player "#Player#"'s move is invalid."}
             if Again
-            then {EndGame {Other Player}}
+            then
+               {ShowInfo "-> Player "#Player#" loses because of two illegal moves."}
+               {EndGame {OtherPlayer Player}} % Returns nil -> end game
             else
                % Second chance: same board and player
-               NextBoard = OldBoard
-               NextPlayer = Player
-               NextMoves = ValidMoves
-               NextAgain = true
+               {ShowInfo "-> Player "#Player#"'s move is invalid is given a second chance."}
+               {RequestNext OldBoard Player ValidMoves true} % Returns new state
             end
          end
-         % Send a request to the (new) player
-         {Send {PortFor NextPlayer} request(board: NextBoard moves:NextMoves)}
-         {Board.show NextBoard}
+      end
+
+      % Send a request to the (new) player and return the new sate
+      fun {RequestNext NextBoard NextPlayer NextMoves NextAgain}
+         {ShowInfo "\nSending request to "#NextPlayer}
+         {Send {PortFor NextPlayer} request(board: NextBoard)}
          state(board:NextBoard player:NextPlayer again:NextAgain moves:NextMoves)
       end
 
-      % End the game and declare Player as the winner
-      proc {EndGame Player}
+      % End the game and declare Player as the winner.
+      % Returns an empty (nil) state.
+      fun {EndGame Player}
          local Status = gameEnded(winner: Player)
          in
             {Send P1 Status}
             {Send P2 Status}
-            {ShowInfo "Player "#Player#" has won!"}
-            {Application.exit 0}
+            {ShowInfo "\nPlayer "#Player#" has won!"}
+            nil % Nil state to signal the end
          end
       end
 
       % The initial board
       InitBoard = {Board.init Rows Cols}
 
-      % The initial state
+      InitState
+      RefPort
+
+      % The initial situation
       situation(finished:_ moves:Moves) = {Board.analyse InitBoard}
-      InitState = state( player:p1
-                         board:InitBoard
-                         again:false
-                         moves:Moves
-                         )
+   in
+      % Request a first move from player one, this
+      % create the intial state to start the Referee thread with.
+      % Arguments: Board Player Again ValidMoves
+      InitState = {RequestNext InitBoard p1 Moves false}
 
       % Start the referee thread with the initial state
-      RP = {RefereePort InitState ConsumeMsg}
-   in
+      RefPort = {RefereePort InitState}
 
-
-      %  Send a request to player 1. The game is on.
-      {Send P1 request(board: InitState.board moves:Moves)}
-      ports({PlayerPort p1 RP} {PlayerPort p2 RP})
-   end
-
-   % Who is the opponent of P?
-   fun {Other P}
-      case P
-      of p1 then p2
-      [] p2 then p1
-      end
-   end
-
-   /* Return a list of possible moves
-    */
-   fun {CalculateMoves Board}
-      nil
-   end
-
-
-   /* Port which receives messages from both players and processes them while
-    * keeping an internal (using FoldL).
-    */
-   fun {RefereePort InitialState Consumer}
-      local Port
-      in
-         thread {FoldL Port Consumer InitialState _} end
-         {NewPort Port}
-      end
+      % Create the ports for the players
+      p({PlayerPort p1 RefPort} {PlayerPort p2 RefPort})
    end
 
    /* Create a port for a player (p1 or p2) to send messages to the referee
@@ -158,15 +172,10 @@ define
    fun {PlayerPort Player RefPort}
       local Port
          proc {SendMsg Msg}
-            {ShowInfo "Player "#Player#"'s message came trough"}
             {Send RefPort msg(player:Player move:Msg)}
          end
       in
-         thread
-            for M in Port do
-               {SendMsg M}
-            end
-         end
+         thread {ForAll Port SendMsg} end
          {NewPort Port}
       end
    end

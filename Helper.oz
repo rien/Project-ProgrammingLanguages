@@ -1,8 +1,5 @@
 functor
-import
-   System(showInfo:ShowInfo)
 export
-   andThen:AndThen
    join:Join
    joinTuple:JoinTuple
    makeListWith:MakeListWith
@@ -22,13 +19,8 @@ define
       end
    end
 
-   fun {AndThen A B}
-      if A
-      then true
-      else B
-      end
-   end
-
+   /* Returns the opponent of P
+    */
    fun {OtherPlayer P}
       case P
       of p1 then p2
@@ -36,10 +28,13 @@ define
       end
    end
 
+   /* Returns the direction
+    * a player has to go to.
+    */
    fun {DirectionFor Player}
       case Player
-      of p1 then 1
-      [] p2 then ~1
+      of p1 then 1  % Up
+      [] p2 then ~1 % Down (-1)
       end
    end
 

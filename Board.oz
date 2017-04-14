@@ -5,14 +5,12 @@
 %
 functor
 import
-   Browser
    System( showInfo:ShowInfo)
    Helper( joinTuple:JoinTuple
            makeListWith:MakeListWith
            makeTupleWith:MakeTupleWith
            otherPlayer:OtherPlayer
            directionFor:DirectionFor
-           andThen:AndThen
          )
 export
    show:Show
@@ -119,8 +117,6 @@ define
          L1
          L2
          L3
-         SlayLeft
-         SlayRight
          RD = R+Dir % Next row
          CL = C-1   % One column left
          CR = C+1   % One column right

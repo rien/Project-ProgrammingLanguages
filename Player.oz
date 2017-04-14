@@ -1,5 +1,7 @@
 functor
-import System(showInfo:ShowInfo)
+import
+   Board
+   System(showInfo:ShowInfo)
 export
    createPlayer:CreatePlayer
 define
@@ -10,18 +12,6 @@ define
     *
     */
    fun {CreatePlayer Player Referee}
-
-      % Consume an incoming request from the referee
-      proc {ConsumeMsg Msg}
-         case Msg
-         of request(board: B moves: ValidMoves) then {DecideNext B ValidMoves}
-         [] gameEnded(winner: P) then
-            if P == Player
-            then {ShowInfo Player#": Yay! :D"}
-            else {ShowInfo Player#": Minimimi... :("}
-            end
-         end
-      end
 
       % Where the magic happens:
       % Pick the next move and send it to the Referee.
@@ -34,14 +24,33 @@ define
       % - Score each move and select the best one
       % - Move the pawn closest to the other side
       proc {DecideNext B ValidMoves}
-         NextMove|_ = ValidMoves.Player
+         NextMove|_ = ValidMoves
       in
          {Send Referee NextMove}
       end
 
+      % Process each incoming message
+      % This procedure ends if the last message
+      % was a gameEnded()
+      proc {ProcessRequests Port}
+         case Port
+         of request(board: B)|T then
+            {DecideNext B {Board.validMovesFor Player B}}
+            {ProcessRequests T}
+         [] gameEnded(winner: P)|_ then
+            if P == Player
+            then {ShowInfo Player#": Yay! :D"}
+            else {ShowInfo Player#": Minimimi... :("}
+            end
+         end
+      end
+
       Port
    in
-      thread {ForAll Port ConsumeMsg} end
+      thread
+         {ProcessRequests Port}
+         {ShowInfo "Player "#Player#" thread ended."}
+      end
       {NewPort Port}
    end
 end

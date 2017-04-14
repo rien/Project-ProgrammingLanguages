@@ -1,7 +1,6 @@
 
 functor
-import
-   System(showInfo:ShowInfo printInfo:PrintInfo)
+import System(showInfo:ShowInfo)
 define
    Size= 100000
    Half = 50000
