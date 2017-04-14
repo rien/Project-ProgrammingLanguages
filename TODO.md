@@ -1,0 +1,4 @@
+- [ ] Limit the time that players van spend each turn (A second or so).
+- [ ] End threads in a clean way
+- [ ] Work with a logging instance, based on the verbosity level. With colors
+- [ ] Multiple (smarter) players. Random move, closest to the opposing side, scoring moves, ...

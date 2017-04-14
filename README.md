@@ -1,5 +1,5 @@
 # Project Programmeertalen 2017
-Project Programmeertalen 2017
+This README specifies the functions to create players and a referee for the game and the protocol which is used to communicate between the different instances. When something is not clear, please send me an email on Rien.Maertens@UGent.be.
 
 ## Protocol
 Each player has to create a `Port` to which the `Referee` can send its messages to.
