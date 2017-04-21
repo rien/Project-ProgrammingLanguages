@@ -7,6 +7,7 @@ functor
 import
    System( showInfo:ShowInfo)
    Helper( joinTuple:JoinTuple
+           join:Join
            makeListWith:MakeListWith
            makeTupleWith:MakeTupleWith
            otherPlayer:OtherPlayer
@@ -61,15 +62,17 @@ define
 
          % Each element separated by a space
          % Between to pipes to make the sides of the frame
-         fun {RowToString Row}
-            "| "#{JoinTuple {Record.map Row ToChar} " "}#" |"
+         fun {RowToString Idx Row}
+            Idx#"| "#{JoinTuple {Record.map Row ToChar} " "}#" |"
          end
+         Cols = {Width Board.1}
 
          % A nice upper and lower border for the frame
-         Border = "+"#{MakeListWith 2*{Width Board.1}+1 &- }#"+"
+         Border = " +"#{MakeListWith 2*Cols+1 &- }#"+"
       in
+      {ShowInfo "   "#{Join [I suchthat I in 1..Cols] " "}}
       {ShowInfo Border}
-      {ShowInfo {JoinTuple {Record.map Board RowToString} "\n"}}
+      {ShowInfo {JoinTuple {Record.mapInd Board RowToString} "\n"}}
       {ShowInfo Border}
       end
    end
