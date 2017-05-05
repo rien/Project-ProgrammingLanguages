@@ -20,7 +20,7 @@ export
    validMovesFor:ValidMovesFor
    analyse:Analyse
    toList:ToList
-
+   doMoveFor:DoMoveFor
 define
 
    /* Init
@@ -129,8 +129,8 @@ define
          Cols = {Width Board.1}
          EndRow
 
-         fun {Move To} % Create the tuple mv(f(R C) t(R C))
-            mv(f(R C) To)
+         fun {Move To} % Create the tuple move(f(R C) t(R C))
+            move(f(R C) To)
          end
       in
          case Player
@@ -232,4 +232,15 @@ define
    in
       {IterateRow 1}
    end
+
+
+   % Helper method: Execute the move
+   fun {DoMoveFor Player Move OldBoard}
+      move(f(Fr Fc) t(Tr Tc)) = Move
+   in
+      {Set Player Tr Tc {Set empty Fr Fc OldBoard}}
+   end
+
+
+
 end
