@@ -6,13 +6,13 @@
 functor
 import
    System( showInfo:ShowInfo)
-   Helper( joinTuple:JoinTuple
-           join:Join
-           makeListWith:MakeListWith
-           makeTupleWith:MakeTupleWith
-           otherPlayer:OtherPlayer
-           directionFor:DirectionFor
-         )
+   Helper_rbmaerte( joinTuple:JoinTuple
+                    join:Join
+                    makeListWith:MakeListWith
+                    makeTupleWith:MakeTupleWith
+                    otherPlayer:OtherPlayer
+                    directionFor:DirectionFor
+                  )
 export
    show:Show
    init:Init

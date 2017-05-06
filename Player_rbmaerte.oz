@@ -1,8 +1,8 @@
 functor
 import
-   Board
+   Board_rbmaerte
    System(showInfo:ShowInfo)
-   Helper(otherPlayer:OtherPlayer)
+   Helper_rbmaerte(otherPlayer:OtherPlayer)
 export
    createPlayer:CreatePlayer
 define
@@ -29,7 +29,7 @@ define
       % - Score each move and select the best one
       % - Move the pawn closest to the other side
       fun {NextMove OldBoard}
-         Move|_ = {Board.validMovesFor Player OldBoard}
+         Move|_ = {Board_rbmaerte.validMovesFor Player OldBoard}
       in
          Move
       end
@@ -69,7 +69,7 @@ define
          of size then
             Player = p2 % We are player 2
             {Send Referee size(Rows Cols)}
-            {Board.init Rows Cols}
+            {Board_rbmaerte.init Rows Cols}
 
          % 2. Choose how many eliminations and give a first elimination
          [] firstElimination then
@@ -80,7 +80,7 @@ define
                   e(R C) = {NextElimination OldBoard}
                in
                   {Send Referee firstElimination(k:Eliminations row:R col:C)}
-                  {Board.set empty R C OldBoard}
+                  {Board_rbmaerte.set empty R C OldBoard}
                end
             else
                {Send Referee firstElimination(k:0 row:nil col:nil)}
@@ -88,12 +88,12 @@ define
             end
 
          % 3. Eliminate further
-         [] elimination(L) then
+         [] elimination(_) then
             local
                e(R C) = {NextElimination OldBoard}
             in
                {Send Referee eliminate(R C)}
-               {Board.set empty R C OldBoard}
+               {Board_rbmaerte.set empty R C OldBoard}
             end
 
          % 4. Decide what our next move will be
@@ -102,7 +102,7 @@ define
                Move = {NextMove OldBoard}
             in
                {Send Referee Move}
-               {Board.doMoveFor Player Move OldBoard}
+               {Board_rbmaerte.doMoveFor Player Move OldBoard}
             end
 
          else raise unknownRequestError(request:Request) end
@@ -114,14 +114,14 @@ define
          case OtherMove
          % 0. We
          of nil then nil
-         [] size(N M) then {Board.init N M}
+         [] size(N M) then {Board_rbmaerte.init N M}
          [] firstElimination(k:K row:R col:C) then
             if K > 0
-            then {Board.set empty R C OldBoard}
+            then {Board_rbmaerte.set empty R C OldBoard}
             else OldBoard
             end
-         [] eliminate(R C) then {Board.set empty R C OldBoard}
-         [] move(_ _) then {Board.doMoveFor {OtherPlayer Player} OtherMove OldBoard}
+         [] eliminate(R C) then {Board_rbmaerte.set empty R C OldBoard}
+         [] move(_ _) then {Board_rbmaerte.doMoveFor {OtherPlayer Player} OtherMove OldBoard}
          else raise unknownOtherMove(other:OtherMove) end
          end
       end
@@ -137,7 +137,6 @@ define
          of r(other:O request:R)|T then
             TmpBoard = {ApplyOther O B}
             NextBoard = {RespondTo R TmpBoard}
-            %{DecideNext B {Board.validMovesFor Player B}}
             {ProcessRequests NextBoard T}
          [] gameEnded(winner: P)|_ then
             if P == Player

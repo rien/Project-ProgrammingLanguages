@@ -1,7 +1,7 @@
 functor
 import
-   Board
-   Helper(isEmpty:IsEmpty otherPlayer:OtherPlayer)
+   Board_rbmaerte
+   Helper_rbmaerte(isEmpty:IsEmpty otherPlayer:OtherPlayer)
    System(showInfo:ShowInfo)
    Application
 export
@@ -75,7 +75,7 @@ define
             {EndGame {OtherPlayer Player}}
             nil % Return nil (the game will be ended anyway)
          else
-            {Board.set empty Row Col OldBoard}
+            {Board_rbmaerte.set empty Row Col OldBoard}
          end
       end
 
@@ -96,7 +96,7 @@ define
                {ShowInfo "Wrong board dimensions."}
                {EndGame NextPlayer}
             else
-               NewBoard = {Board.init Rows Cols}
+               NewBoard = {Board_rbmaerte.init Rows Cols}
             end
          else
             {ShowInfo "Unexpected response. Expected size(N M)."}
@@ -193,7 +193,7 @@ define
          move(f(Fr Fc) t(Tr Tc)) = Response
       in
          {ShowInfo Player#" wants from ("#Fr#" "#Fc#") to ("#Tr#" "#Tc#")"}
-         if {Member Response {Board.validMovesFor Player OldBoard}}
+         if {Member Response {Board_rbmaerte.validMovesFor Player OldBoard}}
          then
             % The move is valid, change board and player
             local
@@ -204,14 +204,14 @@ define
                NoMoreMoves
             in
 
-               NextBoard = {Board.doMoveFor Player Response OldBoard}
+               NextBoard = {Board_rbmaerte.doMoveFor Player Response OldBoard}
                NextPlayer = {OtherPlayer Player}
-               NewSituation = {Board.analyse NextBoard}
+               NewSituation = {Board_rbmaerte.analyse NextBoard}
                NextMoves = NewSituation.moves
                NoMoreMoves = {IsEmpty NextMoves.NextPlayer}
 
                % Show the current board
-               {Board.show NextBoard}
+               {Board_rbmaerte.show NextBoard}
 
                if NewSituation.finished.Player
                then
