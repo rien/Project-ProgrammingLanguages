@@ -20,3 +20,8 @@ run: $(OBJECTS)
 .PHONY: clean
 clean:
 	-rm $(OBJECTS)
+
+.PHONY: binaries
+binaries: Player_rbmaerte.ozf Referee_rbmaerte.ozf Board_rbmaerte.ozf Helper_rbmaerte.ozf
+	rm binaries_rien_maertens.zip
+	zip -j binaries_rien_maertens.zip Player_rbmaerte.ozf Referee_rbmaerte.ozf Board_rbmaerte.ozf Helper_rbmaerte.ozf protocol/README.md
