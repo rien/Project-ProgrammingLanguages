@@ -28,7 +28,10 @@ define
       OwnRow
       Direction
 
-      proc {SetOwnValues}
+      proc {SetOwnValues P R C}
+         Player = P
+         Rows = R
+         Cols = C
          OwnRow = case Player
             of p1 then 1
             [] p2 then Rows
@@ -64,34 +67,37 @@ define
             TargetPenalty
             StraightLineBonus
             NextRow = Row+Direction
+            Score
          in
 
-            % If the move slays another pawn: +10
+            % If the move slays another pawn
+            % Higher score if it is closer to our own row base
             AttackBonus = if B.Row.Col \= empty
-               then 10
+               then 10*(Rows-Distance+1)
                else 0
             end
 
-            % If the move renders the pawn vulnerable: -10
+            % If the move renders the pawn vulnerable
             % (effectively neutralizing an attack bonus)
             TargetPenalty = if 0 < NextRow andthen NextRow < Rows+1
                               andthen ((Col < Cols
                                     andthen B.NextRow.(Col+1) == Other)
                                  orelse (1 < Col
                                     andthen B.NextRow.(Col-1) == Other))
-               then ~10
+               then ~100
                else 0
             end
 
-            % If the pawn can go to the other side without obstacles: +20
+            % If the pawn can go to the other side without obstacles
             StraightLineBonus = if {IsClearPath NextRow Col}
                                  andthen {IsClearPath NextRow Col-1}
                                  andthen {IsClearPath NextRow Col+1}
-               then 20
+               then 10*(Distance+1)
                else 0
             end
-
-            s(score:Distance+AttackBonus+TargetPenalty+StraightLineBonus move:M)
+            Score = Distance+AttackBonus+TargetPenalty+StraightLineBonus
+            %{ShowInfo "move "#M.1.1#","#M.1.2#" "#M.2.1#","#M.2.2#" => "#Score}
+            s(score:Score move:M)
          end
 
          % Compare two moves and return the one with the highest score
@@ -107,7 +113,7 @@ define
 
          Moves = {Board_rbmaerte.validMovesFor Player B}       % All possible moves
          Scored = {Map Moves ScoreMove}                        % Score all the moves
-         Best = {FoldL Scored PickBest s(score:~100 move:nil)} % Pick the best one
+         Best = {FoldL Scored PickBest s(score:~999 move:nil)} % Pick the best one
       in
          Best.move
       end
@@ -127,8 +133,8 @@ define
          end
       in
          case Player
-         of p2 then e(OwnRow {InterleaveFromSide 2 2})
-         [] p1 then e(OwnRow {InterleaveFromSide Cols-1 ~2})
+            of p2 then e(OwnRow {InterleaveFromSide 2 2})
+            [] p1 then e(OwnRow {InterleaveFromSide Cols-1 ~2})
          end
       end
 
@@ -141,10 +147,8 @@ define
 
          % 1. The other player chose the game size
          [] size(N M) then
-            Player = p1 % We are player 1
-            Rows = N
-            Cols = M
-            {SetOwnValues}
+            % We are player 1
+            {SetOwnValues p1 N M}
             {Board_rbmaerte.init N M}
 
          % 2. The other player chose how many eliminations
@@ -174,10 +178,8 @@ define
 
          % 1. Pick the size of the board
          of size then
-            Player = p2 % We are player 2
-            Rows = PreferredRows
-            Cols = PreferredCols
-            {SetOwnValues}
+            % We are player 2
+            {SetOwnValues p2 PreferredRows PreferredCols}
             {Send Referee size(Rows Cols)}
             {Board_rbmaerte.init Rows Cols}
 
