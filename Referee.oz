@@ -12,9 +12,9 @@ define
     *
     * Play a game on a board of the given size (Rows x Cols),
     * between two player which can be communicated with trough the ports P1 and P2.
-    * The function returns a tuple with two Ports: one for each player.
+    * The ports for the players to communicate with the referee will be bound to PR1 and PR2.
     */
-   fun {CreateReferee P1 P2 Rows Cols}
+   proc {CreateReferee P1 P2 PR1 PR2}
 
       % Which port for whic player?
       fun {PortFor P}
@@ -280,7 +280,8 @@ define
       RefPort = {RefereePort state(board:nil stage:pickSize player:p2)}
 
       % Create the ports for the players
-      p({PlayerPort p1 RefPort} {PlayerPort p2 RefPort})
+      PR1 = {PlayerPort p1 RefPort}
+      PR2 = {PlayerPort p2 RefPort}
    end
 
    /* Create a port for a player (p1 or p2) to send messages to the referee
