@@ -1,0 +1,3 @@
+[submodule "protocol"]
+	path = protocol
+	url = git@github.ugent.be:rbmaerte/PT-Protocol-202.git
