@@ -192,7 +192,7 @@ define
     * -> moves contain a record with the valid moves for each player
     *    if it would be their turn right now
     */
-   fun {Analyse B}
+   fun {Analyze B}
       Last = {Width B}
       fun {IsP1 P}
          P == p1
