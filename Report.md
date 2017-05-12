@@ -3,22 +3,22 @@ title: Report Project Programming Languages
 author: Rien Maertens
 date: May 2017
 urlcolor: blue
+
+# - Hardware/software used
+# - Conclusion
+#    - Assignment 1
+#        - Message Passing
+#        - Declarativity
+#    - Assignment 2
+#        - New rule => own code?
+#        - Integrating others
+#
+#  - How does code work?
+#  - Drawbacks, advantages decla & mpc
+#  - Impact rule change (vs other models & statefull)
+#  - Impact communications
+#  - Another programming model better?
 ---
-
- - Hardware/software used
- - Conclusion
-    - Assignment 1
-        - Message Passing
-        - Declarativity
-    - Assignment 2
-        - New rule => own code?
-        - Integrating others
-
-  - How does code work?
-  - Drawbacks, advantages decla & mpc
-  - Impact rule change (vs other models & statefull)
-  - Impact communications
-  - Another programming model better?
 
 # Introduction
 
@@ -66,7 +66,7 @@ At the start of the game, each player is given its own port to communicate with 
 The threads processing the contents of these ports wrap the message of each player in a record together with the symbol of the player and send that record to the main referee port.
 The messages are essentially multiplexed.
 This way, the referee knows which player is currently talking and it prevents a player from pretending to be the other.
-When such behaviour is detected, the player who was pretending to be the other loses.
+When such behavior is detected, the player who was pretending to be the other loses.
 
 
 ### The player
@@ -75,11 +75,34 @@ The first implementation was very simple: the first item in the list of valid mo
 
 ### Declarativity
 
+A declarative approach to writing this program was not a bad choice.
+I've found declarative and functional programming to be really powerful concepts, usually resulting in clean programs.
+The fact that variables can only be bound once and their value never changes makes it simpler to reason about the origins of a certain value in a variable.
+This lessens the need of using a debugger in comparison to object oriented programming.
+However, declarative programs tend to be more complex to do simple things like conditionally adding multiple items to a list.
+There will always be a trade-off between simplicity and complexity, but I personally prefer reasoning above quickly hacking a program together.
+
+Another advantage was the powerful dataflow behavior: you can just trust that the program execution will stop and wait automatically until a variable is bound, instead of worrying about latches, semaphores and other synchronisation techniques. Unfortunately, it is still possible to create deadlocks and the way Oz handles deadlocks is also very confusing: exiting without an error or an exit status different from 0.
+
+The main drawbacks I experienced with this programming language had more to do with the way the syntax was put together than the concepts behind the language.
+For example, the fact that every variable had to be capitalized, just like functions, was confusing at times.
+The compiler didn't make finding bugs and errors caused by these quirks easier. Often the compiler would mention an irrelevant error some 10 lines before the actual fault, if it managed to parse the file at all.
+
+The fact that the Oz compiler does almost no type checking also didn't help with finding errors, especially because some runtime type errors just say "error" and refer to the function definition where the error occurred in.
+
 ### Message-passing Concurrency
 
-The way ports are exchanged between the referee and the players is loosely based on the examples in sections 5.2.1 and 5.2.2 in the book (_Concepts, Techniques and Models of Computer Programming_)
+The way ports are exchanged between the referee and the players is loosely based on the examples in sections 5.2.1 and 5.2.2 in the book (_Concepts, Techniques and Models of Computer Programming_). First, each player port is created with `Player.createPlayer` and the variable where the port to the referee will be bound to is given as an argument. Then the referee is created with `Referee.createReferee`, this binds the referee port to the variables. The messages between the threads are then processed as if they were normal list items.
+
+Unfortunately, I found out a beter way to communicate with the MPC-model when it was too late. Instead of creating two ports, one from the referee to a player and one from the player to the referee, one can create only the port from the referee to a player and embed a response variable in each request sent by the referee.
+
+This way of information exchange between threads felt very intuitive once I realised that ports are just lists. This way of sending messages also creates the opportunity for a player to immediately start reasoning about which move to take next just after it sent its response to the referee.
 
 ## Assignment 2
+
+### Implementing an extra rule
+
+### Integrating other students' code
 
 
 # Implementation
