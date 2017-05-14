@@ -27,11 +27,13 @@ There were two assignments that had to be done.
 First, a chess-like game had to implemented in the Oz programming language using only the declarative model and the message-passing concurrency model.
 Second, the first implementation had to be adapted to  communicate with other students' implementations and to facilitate an extra rule added to the game.
 
-The development was done on a laptop with an Intel i7 Haswell processor running Arch Linux.
+Development of the assignments was done on a laptop with an Intel i7 Haswell processor running Arch Linux.
 Neovim was the main editor used to write the source code and this report.
 An [oz.vim](https://github.com/Procrat/oz.vim) plugin for this editor was of great help.
 The source code was built with the Mozart 2 programming system together with make to simplify conditional compilation and execution.
 This report was written in markdown and converted to pdf (trough \LaTeX) with [Pandoc](http://pandoc.org/).
+
+I will begin with describing how I tackled the assignments while explaining some of the choices in design I made. Then, a more detailed breakdown of the implementation is given. Finally, conclude by summarizing the insights I gained by completing these assignments.
 
 # Assignments
 
@@ -68,6 +70,8 @@ The messages are essentially multiplexed.
 This way, the referee knows which player is currently talking and it prevents a player from pretending to be the other.
 When such behavior is detected, the player who was pretending to be the other loses.
 
+After each turn, the referee calculates the full board and all the possible next moves to know whether the game has ended or not. To mitigate duplicate effort, a move request sent to a player was accompanied by this information, since a player then simply had to choose which one of those moves he thought was best. This also removed the need for an internal state for a player. This changed when in the protocol we chose for more minimalistic communications.
+
 
 ### The player
 Finally, a player module was written.
@@ -75,20 +79,22 @@ The first implementation was very simple: the first item in the list of valid mo
 
 ### Declarativity
 
-A declarative approach to writing this program was not a bad choice.
-I've found declarative and functional programming to be really powerful concepts, usually resulting in clean programs.
-The fact that variables can only be bound once and their value never changes makes it simpler to reason about the origins of a certain value in a variable.
+I've found declarative programming to have some really powerful concepts.
+For example, single assignment: the fact that variables can only be bound once and their value never changes makes it simpler to reason about the origins of a certain value in a variable.
 This lessens the need of using a debugger in comparison to object oriented programming.
 However, declarative programs tend to be more complex to do simple things like conditionally adding multiple items to a list.
 There will always be a trade-off between simplicity and complexity, but I personally prefer reasoning above quickly hacking a program together.
 
 Another advantage was the powerful dataflow behavior: you can just trust that the program execution will stop and wait automatically until a variable is bound, instead of worrying about latches, semaphores and other synchronisation techniques. Unfortunately, it is still possible to create deadlocks and the way Oz handles deadlocks is also very confusing: exiting without an error or an exit status different from 0.
 
-The main drawbacks I experienced with this programming language had more to do with the way the syntax was put together than the concepts behind the language.
-For example, the fact that every variable had to be capitalized, just like functions, was confusing at times.
-The compiler didn't make finding bugs and errors caused by these quirks easier. Often the compiler would mention an irrelevant error some 10 lines before the actual fault, if it managed to parse the file at all.
+The main drawbacks I experienced with this programming language had more to do with the way the syntax and the compiler than the concepts behind the language.
+For example, the fact that every variable had to be capitalized, just like functions, was confusing at first.
+The compiler is also less clever in communicating what exactly goes wrong.
+As a consequence, searching what causes a particular error can be time consuming.
 
-The fact that the Oz compiler does almost no type checking also didn't help with finding errors, especially because some runtime type errors just say "error" and refer to the function definition where the error occurred in.
+The fact that Oz is dynamically typed is a curse as well as a blessing.
+Programs can be written more quickly, but the result is more error prone.
+In that aspect do I prefer Haskell: the (very) strong typing together with a concise type checker has as a consequence that if your program compiles, it is most likely correct. Whereas if your Oz program compiles, there is no guarantee that it is correct.
 
 ### Message-passing Concurrency
 
@@ -96,14 +102,32 @@ The way ports are exchanged between the referee and the players is loosely based
 
 Unfortunately, I found out a beter way to communicate with the MPC-model when it was too late. Instead of creating two ports, one from the referee to a player and one from the player to the referee, one can create only the port from the referee to a player and embed a response variable in each request sent by the referee.
 
-This way of information exchange between threads felt very intuitive once I realised that ports are just lists. This way of sending messages also creates the opportunity for a player to immediately start reasoning about which move to take next just after it sent its response to the referee.
+This way of information exchange between threads felt very intuitive once I realised that ports are just lists. This way of sending messages also creates the opportunity for a player to immediately start reasoning about which move to take next just after it sent its response to the referee. The communication between the referee and a player also goes trough a single channel. Both implementations are therefore very independent of each other, which eases the integration of other people's code in assignment 2.
+
+However, the threads are actually sequential.
+Each thread had to wait for a previous one to send its next message, which always happens when a function is finished. There is no real need for concurrency here.
+The communications could therefore just as well be done by directly invoking a function instead of sending it trough a port.
 
 ## Assignment 2
 
 ### Implementing an extra rule
+The extra rule came down to the addition of some extra stages within the game. I had to add the current stage to the state of the referee and the player had to take account for more kinds of requests. I think I solved this cleanly by giving the referee different `Judge`-functions that have the responsibility over different stages of the game. The player solved this in a similar way.
+
+It was easy to extend my own code to facilitate the extra rule. I estimate that it took a day's work to implement it properly. This was partly because the player had a very simple implementation and I only started creating a 'smart' AI when all the necessities were already implemented.
+
+The extra rule of eliminating your own pawns gave an interesting strategic twist to the game. I decided to eliminate my own pawns in such a way that there is almost one empty place between each pawn. If an opposing pawn then reaches the other side, there is always at least one of pawn that can take the adversary.
+
+In my opinion, the declarative model eased extending the existing implementation. Few bugs occurred when changing the code and I think the reason behind this is the fact that functions often do not have side effects. With OO-programming it is not transparent which of the variables change when a function or method is called, while in declarative programming one can trust that bound variables will stay the same while a function is executed.
 
 ### Integrating other students' code
+When the group composition was revealed, we first gathered everyone in Slack (a team collaboration tool) and then agreed to create a protocol which we would use to let out programs communicate with each other. I created a repository to facilitate easy collaboration, but I ended up adapting the protocol I wrote for the first assignment by myself while taking in account the opinions of my group members.
+Some decisions we made:
 
+- Instead of sending the full board to the player, the response of the other player is sent to the current player. This way the communication is more minimalist and independent of the internal representation of a board.
+- The player that chooses how many eliminations have to be done also sends his first elimination in his response.
+- Every message sent by the referee is wrapped within a record `r(other:X request:Y)`, where `X` is the other player's answer and `Y` is the request, except of `gameEnded` which tells the players the game is finished.
+
+I included the complete protocol in **Appendix A**.
 
 # Implementation
 
