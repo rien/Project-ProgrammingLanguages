@@ -16,7 +16,7 @@ define
     */
    proc {CreateReferee P1 P2 PR1 PR2}
 
-      % Which port for whic player?
+      % Which port for which player?
       fun {PortFor P}
          case P
          of p1 then P1
