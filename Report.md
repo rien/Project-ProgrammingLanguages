@@ -38,7 +38,7 @@ Because there were going to be a lot of indexed reads on the board I searched fo
 I looked at arrays (constant, but not declarative), quadtrees (logarithmic, but not built-in and a lot of work to implement) and tuples (constant and built-in).
 
 I did a benchmark accessing a million items in both tuples and lists. Where lists would take five minutes to read all the items, tuples would need less than a second.
-Needless to say, it was an easy decision to convert the board from a list of lists to a tuple of tuples.
+Needless to say, it was an easy decision to convert the board from a list of lists to a tuple of tuples. You can find this benchmark in the file `List_vs_Tuples.oz`.
 
 
 ### The referee
