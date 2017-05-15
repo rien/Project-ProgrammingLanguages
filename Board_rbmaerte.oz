@@ -18,7 +18,7 @@ export
    init:Init
    set:Set
    validMovesFor:ValidMovesFor
-   analyse:Analyse
+   analyze:Analyze
    toList:ToList
    doMoveFor:DoMoveFor
 define

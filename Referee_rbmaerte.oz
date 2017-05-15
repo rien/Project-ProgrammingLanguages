@@ -206,7 +206,7 @@ define
 
                NextBoard = {Board_rbmaerte.doMoveFor Player Response OldBoard}
                NextPlayer = {OtherPlayer Player}
-               NewSituation = {Board_rbmaerte.analyse NextBoard}
+               NewSituation = {Board_rbmaerte.analyze NextBoard}
                NextMoves = NewSituation.moves
                NoMoreMoves = {IsEmpty NextMoves.NextPlayer}
 
